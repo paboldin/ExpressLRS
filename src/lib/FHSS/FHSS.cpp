@@ -8,6 +8,12 @@
 
 const fhss_config_t domains[] = {
     {"AU915",  FREQ_HZ_TO_REG_VAL(915500000), FREQ_HZ_TO_REG_VAL(926900000), 20},
+    /* Change appropriate frequency limits to change central frequency, it is
+     * calculated as (LOWER_FREQ + UPPER_FREQ)
+     *  FHSSconfig->freq_start + (sync_channel * freq_spread / FREQ_SPREAD_SCALE) - FreqCorrection;
+     *  where freq_spread is
+     *    freq_spread = (FHSSconfig->freq_stop - FHSSconfig->freq_start) * FREQ_SPREAD_SCALE / (FHSSconfig->freq_count - 1);
+     */
     {"FCC915", FREQ_HZ_TO_REG_VAL(903500000), FREQ_HZ_TO_REG_VAL(926900000), 40},
     {"EU868",  FREQ_HZ_TO_REG_VAL(865275000), FREQ_HZ_TO_REG_VAL(869575000), 13},
     {"IN866",  FREQ_HZ_TO_REG_VAL(865375000), FREQ_HZ_TO_REG_VAL(866950000), 4},
@@ -74,7 +80,9 @@ void FHSSrandomiseFHSSsequence(const uint32_t seed)
     // initialize the sequence array
     for (uint16_t i = 0; i < FHSSgetSequenceCount(); i++)
     {
-        if (i % FHSSconfig->freq_count == 0) {
+        if (1 || i % FHSSconfig->freq_count == 0) {
+            /* Only set sync_channel in the sequence, that is the central
+             * frequency, see above */
             FHSSsequence[i] = sync_channel;
         } else if (i % FHSSconfig->freq_count == sync_channel) {
             FHSSsequence[i] = 0;
@@ -83,7 +91,8 @@ void FHSSrandomiseFHSSsequence(const uint32_t seed)
         }
     }
 
-    for (uint16_t i=0; i < FHSSgetSequenceCount(); i++)
+    /* Do not  swap the frequencies, as they are all equal to sync_freq */
+    for (uint16_t i=0; i < 0 * FHSSgetSequenceCount(); i++)
     {
         // if it's not the sync channel
         if (i % FHSSconfig->freq_count != 0)
